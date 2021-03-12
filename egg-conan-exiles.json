@@ -8,7 +8,7 @@
     "author": "merrymen.games@gmail.com",
     "description": "Conan Exiles is an open-world survival game set in the brutal lands of Conan the Barbarian. Survive in a savage world, build your kingdom, and dominate your enemies in brutal combat and epic warfare.",
     "image": "quay.io\/merrymeng\/images-debian-wine-5-conan-mods",
-    "startup": "xvfb-run --auto-servernum wine \/home\/container\/ConanSandboxServer.exe -console -log -Port={{SERVER_PORT}} -QueryPort={{QUERY_PORT}}",
+    "startup": "xvfb-run --auto-servernum wine \/home\/container\/ConanSandboxServer.exe -console -log -MaxPlayers={{MAX_PLAYERS}} -Port={{SERVER_PORT}} -QueryPort={{QUERY_PORT}}",
     "config": {
         "files": "{}",
         "startup": "{\r\n    \"done\":\"Started SourceServerQueries\"\r\n}",
@@ -24,8 +24,17 @@
     },
     "variables": [
         {
+            "name": "Max players",
+            "description": "Maximum number of players allowed on the server.",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "10",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|numeric|min:1|max:64"
+        },
+        {
             "name": "Steam Workshop Mods to Download\/Update",
-            "description": "Comma separated list of Steam Workshop mod IDs to download\/update on server start. (ex. 450814997,463939057) Each mod will be downloaded to the root directory with the folder format \"@ModIdNumber\". NOTE: Particularly large mods (anything over 3 GB) may not download properly due to limitations of SteamCMD.",
+            "description": "Comma separated list of Steam Workshop mod IDs to download\/update on server start (eg. 450814997,463939057).",
             "env_variable": "UPDATE_WORKSHOP",
             "default_value": "",
             "user_viewable": true,
@@ -52,7 +61,7 @@
         },
         {
             "name": "Windows install variable",
-            "description": "Required for windows applications to install with steam.\r\n\r\n1 to enable auto-updates",
+            "description": "Required for windows applications to install with steam.\r\n\r\n1 to enable auto-updates.",
             "env_variable": "WINDOWS_INSTALL",
             "default_value": "1",
             "user_viewable": false,
@@ -61,7 +70,7 @@
         },
         {
             "name": "Auto Update",
-            "description": "Decide if you want to update your server",
+            "description": "Decide if you want to update your server.",
             "env_variable": "AUTO_UPDATE",
             "default_value": "1",
             "user_viewable": true,
@@ -70,7 +79,7 @@
         },
         {
             "name": "Query Port",
-            "description": "Server Query Port",
+            "description": "Server Query Port.",
             "env_variable": "QUERY_PORT",
             "default_value": "27015",
             "user_viewable": true,
