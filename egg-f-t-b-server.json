@@ -1,0 +1,59 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2025-03-08T16:45:29+00:00",
+    "name": "FTB Server",
+    "author": "merrymen.games@gmail.com",
+    "description": "Support modpacks from feed-the-beast.com",
+    "features": [
+        "eula",
+        "java_version",
+        "pid_limit"
+    ],
+    "docker_images": {
+        "Java 21": "ghcr.io\/pterodactyl\/yolks:java_21",
+        "Java 18": "ghcr.io\/pterodactyl\/yolks:java_18",
+        "Java 17": "ghcr.io\/pterodactyl\/yolks:java_17",
+        "Java 8": "ghcr.io\/pterodactyl\/yolks:java_8"
+    },
+    "file_denylist": [],
+    "startup": ".\/run.sh",
+    "config": {
+        "files": "{\r\n    \"server.properties\": {\r\n        \"parser\": \"properties\",\r\n        \"find\": {\r\n            \"server-ip\": \"0.0.0.0\",\r\n            \"server-port\": \"{{server.build.default.port}}\",\r\n            \"query.port\": \"{{server.build.default.port}}\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \")! For help, type \"\r\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n# FTB Pack Installation Script\r\n#\r\n# Server Files: \/mnt\/server\r\nif [ ! -d \/mnt\/server ]; then\r\n    mkdir -p \/mnt\/server\r\nfi\r\ncd \/mnt\/server\r\n\r\n\r\n# Download needed software.\r\nfunction install_required {\r\n    apt update\r\n    apt install -y curl jq\r\n}\r\n\r\nfunction run_installer {\r\n    # get architecture for installer\r\n    INSTALLER_TYPE=$([ \"$(uname -m)\" == \"x86_64\" ] && echo \"linux\" || echo \"arm\/linux\")\r\n    echo \"ModpackID: ${FTB_MODPACK_ID} VersionID: ${FTB_MODPACK_VERSION_ID} InstallerType: ${INSTALLER_TYPE}\"\r\n\r\n    # download installer\r\n    curl -JLO \"https:\/\/api.feed-the-beast.com\/v1\/modpacks\/public\/modpack\/${FTB_MODPACK_ID}\/${FTB_MODPACK_VERSION_ID}\/server\/${INSTALLER_TYPE}\"\r\n    chmod +x serverinstall_${FTB_MODPACK_ID}_${FTB_MODPACK_VERSION_ID}\r\n    \r\n    # remove old forge files (to allow updating)\r\n    rm -rf libraries\/net\/minecraftforge\/forge\r\n    rm -rf libraries\/net\/neoforged\/forge\r\n    rm -f unix_args.txt\r\n    \r\n    # run installer\r\n    .\/serverinstall_${FTB_MODPACK_ID}_${FTB_MODPACK_VERSION_ID} --auto --no-java\r\n}\r\n\r\n# allows startup command to work\r\nfunction move_startup_files {\r\n    # create symlink for forge unix_args.txt if exists\r\n    if compgen -G \"libraries\/net\/minecraftforge\/forge\/*\/unix_args.txt\"; then\r\n        ln -sf libraries\/net\/minecraftforge\/forge\/*\/unix_args.txt unix_args.txt\r\n    fi\r\n    \r\n    # create symlink for neoforge unix_args.txt if exists\r\n    if compgen -G \"libraries\/net\/neoforged\/forge\/*\/unix_args.txt\"; then\r\n        ln -sf libraries\/net\/neoforged\/forge\/*\/unix_args.txt unix_args.txt\r\n    fi\r\n    \r\n    # move forge\/neoforge\/fabric jar file to start-server.jar if exists\r\n    if compgen -G \"forge-*.jar\"; then\r\n        mv -f forge-*.jar start-server.jar\r\n    elif compgen -G \"fabric-*.jar\"; then\r\n        mv -f fabric-*.jar start-server.jar\r\n    fi\r\n}\r\n\r\n# installer cleanup\r\nfunction installer_cleanup {\r\n    rm serverinstall_${FTB_MODPACK_ID}_${FTB_MODPACK_VERSION_ID}\r\n    #rm -f run.bat\r\n    #rm -f run.sh\r\n}\r\n\r\n# run installation steps\r\ninstall_required\r\nrun_installer\r\n# move_startup_files\r\ninstaller_cleanup\r\n\r\necho \"Finished installing FTB modpack\"",
+            "container": "openjdk:21-jdk-slim",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "FTB modpack ID",
+            "description": "The FTB Api modpack ID.\r\n\r\nExample:\r\nhttps:\/\/api.feed-the-beast.com\/v1\/modpacks\/public\/modpack\/{FTB_MODPACK_ID\/{FTB_MODPACK_VERSION_ID}\/server\/linux",
+            "env_variable": "FTB_MODPACK_ID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "integer",
+            "field_type": "text"
+        },
+        {
+            "name": "FTB Pack Version ID",
+            "description": "The modpack api version ID.\r\n\r\nExample:\r\nhttps:\/\/api.feed-the-beast.com\/v1\/modpacks\/public\/modpack\/{FTB_MODPACK_ID\/{FTB_MODPACK_VERSION_ID}\/server\/linux",
+            "env_variable": "FTB_MODPACK_VERSION_ID",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "integer",
+            "field_type": "text"
+        }
+    ]
+}
